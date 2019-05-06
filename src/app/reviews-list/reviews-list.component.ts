@@ -5,7 +5,6 @@ import { ReviewsService } from '../services/reviews.service';
 import { FormControl, Validators, FormGroup, FormBuilder } from '@angular/forms';
 import { ErrorStateMatcher } from '@angular/material/core';
 import { PubNubAngular } from 'pubnub-angular2';
-
 @Component({
   selector: 'app-reviews-list',
   templateUrl: './reviews-list.component.html',
@@ -28,10 +27,14 @@ export class ReviewsListComponent implements OnInit {
   constructor(
     private pubNubService:PubNubAngular,
     private _reviewsService: ReviewsService,
-    private _commentFormBuilder: FormBuilder
+    private _commentFormBuilder: FormBuilder,
+    private pubnub: PubNubAngular
   ) { 
     
-    
+    this.pubnub.init({
+      publishKey: 'pub-c-b5afefa9-aa4c-402a-bea1-f17c5f5de0ca',
+      subscribeKey: 'sub-c-a028a708-6cc1-11e9-bedf-bef46dd4efdc'
+    })
 
   }
 
@@ -46,7 +49,27 @@ export class ReviewsListComponent implements OnInit {
       comment: this.comment
     })
     this.getReviewsList();
+
+    // console.log(PubNub)
   }
+
+  triggerPNEvent(message: string){
+    this.pubnub.publish(
+      {
+          message: {such: message},
+          channel: 'my_channel'
+      },
+      (status, response) => {
+          if (status.error) {
+              console.log(status);
+          } else {
+              console.log('message Published w/ timetoken', response.timetoken);
+          }
+      }
+  );
+
+  }
+
   // get the reviews list
   getReviewsList() {
     this.isDataLoaded = false
@@ -111,6 +134,8 @@ export class ReviewsListComponent implements OnInit {
       this.reviewsList[i].isHelpfulClicked = true;
       this.reviewsList[i].marked_as_helpful += 1;
     }
+
+    this.triggerPNEvent('HELP FULL');
   }
 
   //upvote clicked
@@ -126,6 +151,7 @@ export class ReviewsListComponent implements OnInit {
       this.reviewsList[i].isUpvoteClicked = true;
       this.reviewsList[i].upvotes_count += 1;
     }
+    this.triggerPNEvent('UP VOTE');
   }
 
   //downvote clicked
@@ -141,6 +167,8 @@ export class ReviewsListComponent implements OnInit {
       this.reviewsList[i].isDownvoteClicked = true;
       this.reviewsList[i].downvotes_count += 1;
     }
+
+    this.triggerPNEvent('DOWN VOTE');
   }
 
 }

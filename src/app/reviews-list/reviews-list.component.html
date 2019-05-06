@@ -2,7 +2,7 @@
 	<mat-spinner *ngIf="!isDataLoaded" [diameter]="60" [strokeWidth]="5"></mat-spinner>
 </div>
 <mat-card class="example-card" *ngFor="let review of reviewsList;let i = index">
-	<mat-card-header>
+	<mat-card-header (click)="triggerPNEvent('Header clicked')">
 		<div mat-card-avatar class="example-header-image"></div>
 		<mat-card-title>{{ review.review_title }}
 		</mat-card-title>
